@@ -11,7 +11,7 @@ wheelhouse/
 data/raw/*.fasta
 data/processed/*
 !data/processed/.gitkeep
-models/*.joblib
+# models/*.joblib
 models/*.json
 reports/figures/*.png
 reports/evaluation_report.md
