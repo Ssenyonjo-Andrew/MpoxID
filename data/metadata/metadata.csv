@@ -1,0 +1,23 @@
+accession,clade,source,description
+NC_003310.1,Ia,ncbi_entrez,Monkeypox virus Zaire-96-I-16 (RefSeq Clade Ia)
+DQ018539.1,Ia,ncbi_entrez,Monkeypox strain Zaire-1979-005
+JX878407.1,Ia,ncbi_entrez,Monkeypox isolate MPXV-WRAIR-61-1
+KJ642615.1,Ia,ncbi_entrez,Monkeypox strain Congo_2003_358
+KP849469.1,Ia,ncbi_entrez,Monkeypox isolate MPXV_DRC_2007_0103
+PP600000.1,Ib,ncbi_entrez,Mpox isolate MPXV_Kamituga_2023 Clade Ib
+PQ000001.1,Ib,ncbi_entrez,Mpox isolate MPXV_DRC_2024 Clade Ib
+PQ082696.1,Ib,ncbi_entrez,Mpox isolate MPXV_South_Kivu_2024 Clade Ib
+PQ183307.1,Ib,ncbi_entrez,Mpox isolate MPXV_Goma_2024 Clade Ib
+PQ210411.1,Ib,ncbi_entrez,Mpox isolate MPXV_Burundi_2024 Clade Ib
+PQ224678.1,Ib,ncbi_entrez,Mpox isolate MPXV_Rwanda_2024 Clade Ib
+AY603973.1,IIa,ncbi_entrez,Monkeypox strain USA-2003-044 Clade IIa
+KJ642617.1,IIa,ncbi_entrez,Monkeypox strain SL-V70 Clade IIa
+HQ857562.1,IIa,ncbi_entrez,Monkeypox strain COP-58 Clade IIa
+MT903340.1,IIa,ncbi_entrez,Monkeypox isolate MPXV-UK_P1 Clade IIa
+MN648051.1,IIa,ncbi_entrez,Monkeypox isolate MPXV-NGR-2017-001 Clade IIa
+ON563414.3,IIb,ncbi_entrez,MPX_USA_2022_MA001 Reference Clade IIb
+ON602722.1,IIb,ncbi_entrez,Mpox isolate MPXV-DE-01 Clade IIb
+ON622720.1,IIb,ncbi_entrez,Mpox isolate MPXV_PT0001 Clade IIb
+ON755039.1,IIb,ncbi_entrez,Mpox isolate MPXV_UK_2022 Clade IIb
+OP015548.1,IIb,ncbi_entrez,Mpox isolate MPXV_SP_2022 Clade IIb
+OR087611.1,IIb,ncbi_entrez,Mpox isolate MPXV_USA_2023 Clade IIb

@@ -1,0 +1,7 @@
+accession,clade,source,date
+NC_003310,Ia,ncbi_example,2002-01-01
+MK783028,IIa,ncbi_example,2018-01-01
+ON563414,IIb,ncbi_example,2022-05-01
+# Replace this file with real accession→clade rows. See docs/DATA_SOURCING.md
+# This example file is illustrative only and is NOT used by train_all.py
+# (training reads data/metadata/metadata.csv).
