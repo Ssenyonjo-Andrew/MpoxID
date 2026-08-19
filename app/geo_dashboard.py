@@ -169,7 +169,7 @@ def render_surveillance_dashboard():
         local_file = ROOT / "data" / "raw" / "owid-monkeypox-data.csv"
         cache_status = "Cached Offline" if local_file.exists() else "Live Only"
         st.caption(f"**Data Status**: {cache_status}")
-        st.caption(f"**Source**: [Our World in Data (GitHub)]({OWID_MPOX_URL})")
+        st.caption(f"**Source**: [Our World in Data]({OWID_MPOX_URL})")
 
     # Load dataset
     with st.spinner("Ingesting and calculating epidemiological metrics..."):
@@ -240,7 +240,7 @@ def render_surveillance_dashboard():
     st.markdown("---")
 
     # Map Visual Options & Filtering
-    st.subheader("Interactive Spatial Outbreak Map & Live Hover Card")
+    st.subheader("Interactive Spatial Outbreak Map")
 
     ctrl_col1, ctrl_col2, ctrl_col3, ctrl_col4 = st.columns([1.2, 1.2, 1.0, 1.0])
 
@@ -337,16 +337,16 @@ def render_surveillance_dashboard():
             st.plotly_chart(fig_map, use_container_width=True)
 
     # Hover card explanation hint
-    st.markdown(
-        """
-        <div class="hover-card-preview">
-            <b>Interactive Hover Card Guide</b>: Hover over any country or territory above to reveal its 
-            <b>detailed operational card</b> including confirmed cases, fatalities, Case Fatality Rate (CFR), 
-            7-day smoothed incidence, population rate, epidemic risk tier, and dominant <b>Mpox Clade profile</b>.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # st.markdown(
+    #     """
+    #     <div class="hover-card-preview">
+    #         <b>Interactive Hover Card Guide</b>: Hover over any country or territory above to reveal its 
+    #         <b>detailed operational card</b> including confirmed cases, fatalities, Case Fatality Rate (CFR), 
+    #         7-day smoothed incidence, population rate, epidemic risk tier, and dominant <b>Mpox Clade profile</b>.
+    #     </div>
+    #     """,
+    #     unsafe_allow_html=True,
+    # )
 
     st.markdown("---")
 
