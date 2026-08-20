@@ -3,7 +3,7 @@
 
 project:
   name: mpox_clade_classifier
-  version: "1.0.0"
+  version: "2.0.0"
   random_seed: 42
 
 clades:
@@ -30,13 +30,31 @@ quality:
 
 training:
   test_size: 0.2
+  chronological_holdout_fraction: 0.2
   n_cv_folds: 5
   class_weight: balanced             # handle Ia/Ib/IIa/IIb imbalance
+  quality_filter_for_training: false # if true, drop Poor assemblies before model fitting
   models:
     - logistic_regression
     - random_forest
     - xgboost
-  deploy_model: xgboost              # primary offline deployment artifact
+  deploy_model: auto                 # chosen automatically from chronological holdout
+  tie_break_priority_clades: ["Ia", "Ib"]
+  min_priority_recall_floor: 0.2
+
+  deep_learning:
+    backend: auto                    # torch | auto
+    max_epochs: 20
+    batch_size: 16
+    learning_rate: 0.001
+    patience: 4
+    max_sequence_length: 4096
+    representation: chunked_onehot   # chunked_onehot | kmer_image
+    chunk_strategy: evenly_spaced
+    n_chunks: 32
+    chunk_length: 128
+    hidden_dim: 128
+    dropout: 0.3
 
 paths:
   raw_fasta: data/raw
@@ -46,5 +64,9 @@ paths:
   reports_dir: reports
 
 inference:
+  inference_mode: online             # online keeps a warm in-memory/server-backed predictor by default
+  online_provider: inprocess         # inprocess | http
+  online_url: http://127.0.0.1:8765/predict
+  request_timeout_seconds: 30
   confidence_decimals: 4
   top_kmers_per_clade: 10

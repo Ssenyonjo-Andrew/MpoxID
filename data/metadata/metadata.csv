@@ -1,23 +1,68 @@
-accession,clade,source,description
-NC_003310.1,Ia,ncbi_entrez,Monkeypox virus Zaire-96-I-16 (RefSeq Clade Ia)
-DQ018539.1,Ia,ncbi_entrez,Monkeypox strain Zaire-1979-005
-JX878407.1,Ia,ncbi_entrez,Monkeypox isolate MPXV-WRAIR-61-1
-KJ642615.1,Ia,ncbi_entrez,Monkeypox strain Congo_2003_358
-KP849469.1,Ia,ncbi_entrez,Monkeypox isolate MPXV_DRC_2007_0103
-PP600000.1,Ib,ncbi_entrez,Mpox isolate MPXV_Kamituga_2023 Clade Ib
-PQ000001.1,Ib,ncbi_entrez,Mpox isolate MPXV_DRC_2024 Clade Ib
-PQ082696.1,Ib,ncbi_entrez,Mpox isolate MPXV_South_Kivu_2024 Clade Ib
-PQ183307.1,Ib,ncbi_entrez,Mpox isolate MPXV_Goma_2024 Clade Ib
-PQ210411.1,Ib,ncbi_entrez,Mpox isolate MPXV_Burundi_2024 Clade Ib
-PQ224678.1,Ib,ncbi_entrez,Mpox isolate MPXV_Rwanda_2024 Clade Ib
-AY603973.1,IIa,ncbi_entrez,Monkeypox strain USA-2003-044 Clade IIa
-KJ642617.1,IIa,ncbi_entrez,Monkeypox strain SL-V70 Clade IIa
-HQ857562.1,IIa,ncbi_entrez,Monkeypox strain COP-58 Clade IIa
-MT903340.1,IIa,ncbi_entrez,Monkeypox isolate MPXV-UK_P1 Clade IIa
-MN648051.1,IIa,ncbi_entrez,Monkeypox isolate MPXV-NGR-2017-001 Clade IIa
-ON563414.3,IIb,ncbi_entrez,MPX_USA_2022_MA001 Reference Clade IIb
-ON602722.1,IIb,ncbi_entrez,Mpox isolate MPXV-DE-01 Clade IIb
-ON622720.1,IIb,ncbi_entrez,Mpox isolate MPXV_PT0001 Clade IIb
-ON755039.1,IIb,ncbi_entrez,Mpox isolate MPXV_UK_2022 Clade IIb
-OP015548.1,IIb,ncbi_entrez,Mpox isolate MPXV_SP_2022 Clade IIb
-OR087611.1,IIb,ncbi_entrez,Mpox isolate MPXV_USA_2023 Clade IIb
+accession,clade,country,collection_date,submitter,sequence_length
+PZ645922,Ib,"Italy: Emilia-Romagna, Ferrara",2026-05-26,,195819
+PZ645921,Ib,"Italy: Emilia-Romagna, Cesena",2026-05-21,,195822
+PX454710,IIb,,,,208138
+PX088146,Ia,Guinea: Conakry,16-Jun-2025,,198502
+PX088145,Ia,Guinea: Conakry,14-Jun-2025,,198057
+PX088144,Ia,Guinea: Kindia,14-Jun-2025,,197712
+PX088143,Ia,Guinea: Conakry,03-Jun-2025,,198166
+PV993194,Ia,Guinea: Macenta,04-Dec-2024,,198045
+PV993193,Ia,Guinea: Macenta,30-Aug-2024,,199364
+PZ148290,Ib,Israel,01-Jan-2026,,195382
+PX454709,IIb,Germany,2022-05-19,,198052
+PX049156,Ia,,,,199458
+PX049155,Ib,,,,195352
+PX049154,Ia,,,,197366
+PV785666,Ia,China,2024-08-22,,196553
+PV785665,Ia,China,2024-08-20,,197115
+PV785664,Ia,China,2024-08-13,,197119
+PV785663,Ia,China,2024-06-28,,196968
+PV785662,Ia,China,2024-06-08,,197118
+PV785661,Ia,China,2024-05-22,,196553
+PV785660,Ia,China,2023-10-11,,196657
+PV785659,Ia,China,2023-09-07,,196873
+PV785658,Ia,China,2023-09-05,,196798
+PV785657,Ia,China,2023-07-19,,197138
+PV785656,Ia,China,2023-07-17,,196655
+PV785655,Ia,China,2023-07-11,,196924
+PV785654,Ia,China,2023-07-09,,197065
+PV785653,Ia,China,2023-07-07,,197014
+PV785652,Ia,China,2023-07-04,,197065
+PV785651,Ia,China,2023-07-02,,196947
+PV785650,Ia,China,2023-06-27,,196824
+PV785649,Ia,China,2023-06-25,,197091
+PV785648,Ia,China,2023-06-24,,196831
+PV785647,Ia,China,2023-06-20,,196936
+PV785646,Ia,China,2023-06-18,,197091
+PP748917,Ia,Nigeria,25-May-2022,,197556
+PV298252,Ib,Germany,Dec-2024,,189239
+PV298251,Ib,Germany,Dec-2024,,189095
+PV298250,Ib,Germany,Jan-2025,,189209
+PV298249,Ib,Germany,Jan-2025,,189232
+PV298248,Ib,Germany,Dec-2024,,189235
+PV298247,Ib,Germany,Feb-2025,,189292
+PV122075,Ia,Liberia: Sinoe County,05-Sep-2024,,200360
+PV122074,Ia,Liberia: Nimba County,04-Jul-2024,,200415
+PV122073,Ia,Liberia: Nimba County,12-Mar-2024,,200405
+PV122072,Ia,Liberia: Sinoe County,12-Feb-2024,,200361
+PV122071,Ia,Liberia: Nimba County,09-Jan-2024,,200372
+PV034567,Ia,Italy: Emilia-Romagna,2022-05-07,,197236
+PV034566,Ia,Italy: Emilia-Romagna,2022-06-27,,197237
+PV034565,Ia,Italy: Emilia-Romagna,2022-06-06,,197210
+PV034564,Ia,Italy: Emilia-Romagna,2022-07-05,,192938
+PV034563,Ia,Italy: Emilia-Romagna,2022-06-27,,197218
+PV034562,Ia,Italy: Emilia-Romagna,2022-06-27,,197241
+PV034561,Ia,Italy: Emilia-Romagna,2022-07-05,,197238
+PV034560,Ia,Italy: Emilia-Romagna,2022-06-06,,197244
+PV034559,Ia,Italy: Emilia-Romagna,2022-06-06,,197240
+PV034558,Ia,Italy: Emilia-Romagna,2022-07-22,,197225
+PV034557,Ia,Italy: Emilia-Romagna,2022-07-22,,197230
+PQ672985,Ia,China,24-Jan-2024,,197139
+PQ672984,Ia,China,07-Jan-2024,,197137
+PQ672983,Ia,China,28-Nov-2023,,197140
+PQ672982,Ia,China,10-Oct-2023,,197137
+PQ672981,Ia,China,16-Sep-2023,,197152
+PQ672980,Ia,China,11-Sep-2023,,197138
+PQ762586,Ib,United Kingdom,28-Nov-2024,,186229
+PQ499044,Ib,Rwanda,Oct-2024,,195370
+PQ628240,Ib,United Kingdom,27-Oct-2024,,195330

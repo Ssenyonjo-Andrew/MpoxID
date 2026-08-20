@@ -18,6 +18,7 @@ from mpox_clf.features.kmer import build_canonical_vocab, canonical_kmer
 from mpox_clf.features.quality import compute_quality_metrics, quality_flag_from_metrics
 from mpox_clf.preprocessing.fasta_io import load_fasta, normalize_sequence, write_fasta
 from mpox_clf.preprocessing.fasta_io import SequenceRecord
+from mpox_clf.utils.config import DEFAULT_CFG
 
 
 def test_normalize_lowercase_and_u():
@@ -58,6 +59,14 @@ def test_feature_extractor_shape():
     assert X.shape[0] == 2
     assert X.shape[1] == len(ext.feature_names_)
     assert "quality_flag" in df.columns
+
+
+def test_default_training_models_are_supported():
+    assert DEFAULT_CFG["training"]["models"] == [
+        "logistic_regression",
+        "random_forest",
+        "xgboost",
+    ]
 
 
 def test_load_fasta_merge_contigs(tmp_path):

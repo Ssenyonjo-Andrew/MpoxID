@@ -1,8 +1,8 @@
 """
-Train all classical models from data/raw + data/metadata/metadata.csv.
+Train all classical models from the real NCBI dataset in data/raw.
 
 Usage (from project root):
-    python scripts/generate_demo_data.py   # first time / CI only
+    python scripts/fetch_real_mpox_data.py
     python scripts/train_all.py
 
 For production: point config paths at real FASTA + metadata (docs/DATA_SOURCING.md).
@@ -25,29 +25,22 @@ def main() -> None:
     root = project_root()
     fasta = root / cfg["paths"]["raw_fasta"]
     real_fa = fasta / "real_mpox_genomes.fasta"
-    demo = fasta / "demo_genomes.fasta"
     if real_fa.exists():
         fasta_path = real_fa
-    elif demo.exists():
-        fasta_path = demo
     else:
-        fasta_path = fasta
+        raise SystemExit(
+            f"Missing {real_fa}. Run scripts/fetch_real_mpox_data.py before training."
+        )
     metadata = root / cfg["paths"]["metadata"]
 
     if not metadata.exists():
         raise SystemExit(
-            f"Missing {metadata}. Run scripts/generate_demo_data.py for a demo set, "
-            "or create metadata.csv (accession,clade) for real genomes."
+            f"Missing {metadata}. Run scripts/fetch_real_mpox_data.py first."
         )
     if not Path(fasta_path).exists():
         raise SystemExit(f"Missing FASTA input: {fasta_path}")
 
     print(f"Training from FASTA={fasta_path}  metadata={metadata}")
-    if fasta_path == demo:
-        cfg.setdefault("quality", {})
-        cfg["quality"]["min_length_fair"] = 8_000
-        cfg["quality"]["min_length_poor"] = 3_000
-        print("[train_all] Demo mode: lowered min_length quality thresholds.")
     result = train_from_fasta_and_metadata(fasta_path, metadata, config=cfg)
     print("Deploy model:", result["deploy_model"])
     for name, m in result["results"].items():

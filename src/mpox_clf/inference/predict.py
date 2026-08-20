@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Optional, Sequence, Union
+from typing import Callable, List, Optional, Sequence, Union
 
 import joblib
 import numpy as np
@@ -47,7 +47,7 @@ class MpoxPredictor:
     Loads deploy_bundle.joblib once; call `.predict(...)` for single or batch FASTA.
     """
 
-    def __init__(self, bundle_path: Optional[PathLike] = None):
+    def __init__(self, bundle_path: Optional[PathLike] = None, use_ensemble: bool = False):
         self.bundle_path = Path(bundle_path) if bundle_path else default_bundle_path()
         if not self.bundle_path.exists():
             raise FileNotFoundError(
@@ -61,9 +61,11 @@ class MpoxPredictor:
         self.extractor = self.bundle["extractor"]
         self.label_encoder = self.bundle["label_encoder"]
         self.model_name = self.bundle.get("model_name", "unknown")
+        self.use_ensemble = use_ensemble and self.ensemble is not None
         self.clades = list(self.bundle.get("clades", self.label_encoder.classes_))
         self.clade_means = self.bundle.get("clade_means", {})
         self.schema_hash = self.bundle.get("schema_hash", "legacy")
+        self.last_feature_matrix_: Optional[np.ndarray] = None
         self._top_kmers_meta = self._load_top_kmers_meta()
 
     def _load_top_kmers_meta(self):
@@ -77,15 +79,41 @@ class MpoxPredictor:
                 return {}
         return {}
 
-    def predict_records(self, records: Sequence[SequenceRecord], enable_audit_log: bool = True) -> pd.DataFrame:
+    def predict_records(
+        self,
+        records: Sequence[SequenceRecord],
+        enable_audit_log: bool = True,
+        batch_size: Optional[int] = None,
+        progress_callback: Optional[Callable[[pd.DataFrame, int, int], None]] = None,
+    ) -> pd.DataFrame:
         if not records:
             return pd.DataFrame()
 
+        records = list(records)
+        if batch_size and batch_size > 0 and len(records) > batch_size:
+            batches = []
+            feature_batches = []
+            total = len(records)
+            for start in range(0, total, batch_size):
+                batch = self.predict_records(
+                    records[start : start + batch_size],
+                    enable_audit_log=enable_audit_log,
+                )
+                batches.append(batch)
+                if self.last_feature_matrix_ is not None:
+                    feature_batches.append(self.last_feature_matrix_)
+                if progress_callback is not None:
+                    progress_callback(pd.concat(batches, ignore_index=True), min(start + batch_size, total), total)
+            if feature_batches:
+                self.last_feature_matrix_ = np.vstack(feature_batches)
+            return pd.concat(batches, ignore_index=True)
+
         feat_df = self.extractor.transform_records(list(records))
         X = self.extractor.model_matrix(feat_df)
+        self.last_feature_matrix_ = X
 
         # Ensemble predictions & consensus if available
-        if self.ensemble is not None:
+        if self.use_ensemble:
             ensemble_results = self.ensemble.predict_with_consensus(X)
         else:
             proba = self.model.predict_proba(X) if hasattr(self.model, "predict_proba") else None
@@ -94,7 +122,13 @@ class MpoxPredictor:
                 conf = proba[np.arange(len(pred_idx)), pred_idx]
                 pred_labels = self.label_encoder.inverse_transform(pred_idx)
             else:
-                pred_labels = self.model.predict(X)
+                raw_pred = self.model.predict(X)
+                if np.issubdtype(np.asarray(raw_pred).dtype, np.number):
+                    pred_labels = self.label_encoder.inverse_transform(
+                        np.asarray(raw_pred, dtype=int)
+                    )
+                else:
+                    pred_labels = raw_pred
                 conf = np.ones(len(pred_labels))
 
             ensemble_results = [

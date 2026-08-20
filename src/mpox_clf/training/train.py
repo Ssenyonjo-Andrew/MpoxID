@@ -305,11 +305,35 @@ def train_from_dataframe(
         "top_kmers_per_clade": top_kmers,
         "trained_at": bundle["trained_at"],
     }
+    accuracy_artifact = {
+        "dataset": {
+            "n_sequences": int(len(labeled_df)),
+            "class_counts": meta["class_counts"],
+            "classes": list(le.classes_),
+            "feature_count": int(X.shape[1]),
+            "trained_at": bundle["trained_at"],
+        },
+        "selection_metric": "stratified_cross_validation_macro_f1",
+        "deployed_model": deploy_name,
+        "models": {
+            name: {
+                "cross_validation_accuracy": float(results[name]["accuracy"]),
+                "cross_validation_macro_f1": float(results[name]["macro_f1"]),
+                "holdout_accuracy": float(results[name]["holdout_accuracy"]),
+                "holdout_macro_f1": float(results[name]["holdout_macro_f1"]),
+                "per_class": results[name]["per_class"].to_dict(orient="records"),
+            }
+            for name in results
+        },
+    }
     (models_dir / "training_meta.json").write_text(
         json.dumps(meta, indent=2), encoding="utf-8"
     )
     (models_dir / "model_comparison.json").write_text(
         json.dumps(meta["metrics"], indent=2), encoding="utf-8"
+    )
+    (models_dir / "accuracy_artifact.json").write_text(
+        json.dumps(accuracy_artifact, indent=2), encoding="utf-8"
     )
 
     write_evaluation_report(

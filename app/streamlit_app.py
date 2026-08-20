@@ -32,6 +32,8 @@ for p in (ROOT, SRC, APP):
 
 from mpox_clf.inference import MpoxPredictor  # noqa: E402
 from mpox_clf.inference.active_learning import log_user_correction  # noqa: E402
+from mpox_clf.inference.service import predict_online  # noqa: E402
+from mpox_clf.preprocessing.fasta_io import load_fasta  # noqa: E402
 from mpox_clf.utils.pdf_report import generate_printable_html_report  # noqa: E402
 
 try:
@@ -46,11 +48,51 @@ CLADE_COLORS = {
     "IIb": "#e65100",
 }
 
+PEXELS_DNA_VIDEO = "https://www.pexels.com/download/video/35967934/"
+
+
+def render_landing_page() -> bool:
+    st.markdown(
+        f"""
+        <section class="mpoxid-hero">
+            <video class="mpoxid-hero-video" autoplay muted loop playsinline preload="metadata">
+                <source src="{PEXELS_DNA_VIDEO}" type="video/mp4">
+            </video>
+            <div class="mpoxid-hero-shade"></div>
+            <div class="mpoxid-hero-content">
+                <div class="mpoxid-kicker"> GENOMIC INTELLIGENCE</div>
+                <h1>MpoxID</h1>
+                <p>Fast clade identification and genome quality review for mpox surveillance teams.</p>
+                <div class="mpoxid-hero-meta">Clades Ia · Ib · IIa · IIb &nbsp;|&nbsp; CPU-ready &nbsp;|&nbsp; Privacy-first</div>
+            </div>
+        </section>
+        <div class="mpoxid-credit">.... <a href="https://www.pexels.com/video/abstract-dna-helix-animation-on-dark-background-35967934/" target="_blank">...</a></div>
+        <style>
+            .mpoxid-hero {{ position: relative; min-height: calc(100vh - 5rem); overflow: hidden; display: flex; align-items: flex-end; margin: 0; border: 1px solid rgba(72, 219, 251, 0.28); background: #07131c; }}
+            .mpoxid-hero-video, .mpoxid-hero-shade {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }}
+            .mpoxid-hero-video {{ opacity: 0.72; }}
+            .mpoxid-hero-shade {{ background: linear-gradient(90deg, rgba(3, 12, 18, 0.95), rgba(3, 12, 18, 0.58) 52%, rgba(3, 12, 18, 0.18)); }}
+            .mpoxid-hero-content {{ position: relative; z-index: 1; max-width: 760px; padding: 2.5rem clamp(1.25rem, 5vw, 4.5rem); color: #f4fbff; }}
+            .mpoxid-kicker {{ color: #67e8f9; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.14em; margin-bottom: 0.65rem; }}
+            .mpoxid-hero h1 {{ margin: 0; color: #ffffff; font-size: clamp(2.8rem, 7vw, 5.6rem); line-height: 0.95; letter-spacing: 0; }}
+            .mpoxid-hero p {{ max-width: 520px; margin: 1rem 0 0; color: #d9f3fa; font-size: 1.05rem; line-height: 1.5; }}
+            .mpoxid-hero-meta {{ margin-top: 1.2rem; color: #a5dce8; font-size: 0.78rem; }}
+            .mpoxid-credit {{ margin: 0.35rem 0 0.5rem; color: #78909c; font-size: 0.7rem; text-align: right; }}
+            .mpoxid-credit a {{ color: #38bdf8; }}
+            @media (max-width: 700px) {{ .mpoxid-hero {{ min-height: calc(100vh - 4rem); }} .mpoxid-hero-shade {{ background: linear-gradient(0deg, rgba(3, 12, 18, 0.94), rgba(3, 12, 18, 0.38)); }} }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    button_col = st.columns([1, 1, 1])[1]
+    with button_col:
+        return st.button("Enter MpoxID", type="primary", width="stretch")
+
 
 @st.cache_resource
 def load_predictor() -> MpoxPredictor:
     bundle = ROOT / "models" / "deploy_bundle.joblib"
-    return MpoxPredictor(bundle)
+    return MpoxPredictor(bundle, use_ensemble=False)
 
 
 def render_nextclade_css():
@@ -67,7 +109,6 @@ def render_nextclade_css():
         }
         .nextclade-table {
             width: 100%;
-            border-collapse: collapse;
             font-size: 0.82rem;
             background-color: #ffffff;
             color: #212529;
@@ -247,16 +288,12 @@ def render_nextclade_table(df: pd.DataFrame):
     st.markdown("".join(html), unsafe_allow_html=True)
 
 
-def _render_outbreak_clustering(df: pd.DataFrame, predictor: MpoxPredictor):
+def _render_outbreak_clustering(df: pd.DataFrame, feat_matrix: np.ndarray):
     st.markdown("---")
     st.subheader("Outbreak Clustering & Pairwise Genomic Distance Matrix")
     if len(df) < 2:
         st.info("Upload at least 2 sequences to generate an outbreak distance matrix & cluster dendrogram.")
         return
-
-    # Extract numeric feature matrix from records for clustering
-    recs = predictor.predict(df["sequence_raw"].tolist())
-    feat_matrix = predictor.extractor.model_matrix(predictor.extractor.transform(df["sequence_raw"].tolist()))
 
     # Compute pairwise euclidean distance matrix
     from scipy.spatial.distance import pdist, squareform
@@ -283,15 +320,21 @@ def _render_outbreak_clustering(df: pd.DataFrame, predictor: MpoxPredictor):
 
 def main() -> None:
     st.set_page_config(
-        page_title="Mpox Analysis & Global Surveillance Suite",
+        page_title="MpoxID",
         layout="wide",
     )
+
+    if not st.session_state.get("show_workspace", False):
+        if render_landing_page():
+            st.session_state.show_workspace = True
+            st.rerun()
+        return
 
     with st.sidebar:
         st.markdown(
             """
             <div style="text-align:center; padding: 6px 0 12px 0;">
-                <h3 style="margin:0; color:#38bdf8;">MegaMpox Suite</h3>
+                <h3 style="margin:0; color:#38bdf8;">MpoxID</h3>
                 <p style="margin:0; font-size:0.8rem; color:#94a3b8;">Genomic Intelligence & Public Health Ops</p>
             </div>
             """,
@@ -314,7 +357,7 @@ def main() -> None:
     st.markdown(
         """
         <div style="background-color:#1e272e; color:#ffffff; padding:12px 20px; border-radius:6px; margin-bottom:15px;">
-            <h2 style="margin:0; color:#48dbfb; font-size:1.6rem;">Nextclade Mpox Analysis Suite</h2>
+            <h2 style="margin:0; color:#48dbfb; font-size:1.6rem;">MpoxID Genomic Classifier</h2>
             <p style="margin:4px 0 0 0; color:#dcdde1; font-size:0.9rem;">
                 Real-Time CPU Classification (Clades Ia, Ib, IIa, IIb), Ensemble Consensus, OOD Detection & Sequence QC
             </p>
@@ -324,6 +367,7 @@ def main() -> None:
     )
 
     # Sidebar controls & Provenance
+    predictor: MpoxPredictor
     with st.sidebar:
         st.header("System & Model Provenance")
         bundle_path = ROOT / "models" / "deploy_bundle.joblib"
@@ -344,7 +388,7 @@ def main() -> None:
                 f"- **Trained Date**: `{meta.get('trained_at', 'N/A')[:19]}`\n"
                 f"- **Genomes Count ($N$)**: `{meta.get('n_sequences', 'N/A')}`\n"
                 f"- **Schema Hash**: `{predictor.schema_hash}`\n"
-                f"- **Ensemble**: XGBoost + RF + LR"
+                f"- **Prediction**: `{predictor.model_name.upper()}` deployed model"
             )
         except Exception as exc:
             st.error(f"Failed to load model: {exc}")
@@ -370,21 +414,42 @@ def main() -> None:
         real_fa = ROOT / "data" / "raw" / "real_mpox_genomes.fasta"
         if real_fa.exists():
             with st.spinner("Analyzing Real NCBI Mpox Genomes in Real-Time..."):
-                df = predictor.predict(real_fa)
+                df = predict_online(real_fa, bundle_path=bundle_path)
         else:
             st.warning("Real FASTA dataset not found. Run scripts/fetch_real_mpox_data.py first.")
 
     elif uploaded:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
+            records = []
             for uf in uploaded:
                 dest = tmp_path / uf.name
                 dest.write_bytes(uf.getbuffer())
+                file_records = load_fasta(dest, merge_contigs="auto")
+                for record in file_records:
+                    record.source_file = uf.name
+                records.extend(file_records)
 
-            with st.spinner("Analyzing uploaded sequences in Real-Time..."):
+            with st.status("Analyzing uploaded sequences...", expanded=True) as status:
                 try:
-                    df = predictor.predict(tmp_path)
+                    progress = st.progress(0, text="Preparing sequences...")
+                    results_slot = st.empty()
+
+                    def update_results(partial: pd.DataFrame, completed: int, total: int) -> None:
+                        progress.progress(completed / total, text=f"Predicted {completed} of {total} sequences")
+                        with results_slot.container():
+                            st.caption(f"Results available: {completed}/{total}")
+                            render_nextclade_table(partial)
+
+                    df = predictor.predict_records(
+                        records,
+                        batch_size=1,
+                        progress_callback=update_results,
+                    )
+                    progress.progress(1.0, text=f"Predicted {len(df)} sequences")
+                    status.update(label=f"Finished: {len(df)} sequences predicted", state="complete")
                 except Exception as exc:
+                    status.update(label="Analysis failed", state="error")
                     st.error(f"Analysis failed: {exc}")
                     return
     else:
@@ -424,7 +489,7 @@ def main() -> None:
             seq_row = df[df["sequence_id"] == selected_seq].iloc[0]
             c1, c2, c3, c4, c5 = st.columns(5)
             c1.metric("Predicted Clade", str(seq_row["predicted_clade"]), f"{float(seq_row['confidence']):.1%} confidence")
-            c2.metric("Ensemble Consensus", str(seq_row["consensus_ratio"]), "XGB+RF+LR")
+            c2.metric("Model agreement", str(seq_row["consensus_ratio"]), predictor.model_name.upper())
             c3.metric("Quality Flag", str(seq_row["quality_flag"]), f"{float(seq_row['n_pct']):.2f}% Ns")
             c4.metric("OOD Status", str(seq_row["ood_status"]), f"Score: {float(seq_row['anomaly_score']):.2f}")
             c5.metric("APOBEC3 Score", f"{float(seq_row['apobec3_combined_score']):.4f}", f"CAI: {float(seq_row['cai_score']):.4f}")
@@ -467,7 +532,11 @@ def main() -> None:
             )
 
     with tab_outbreak:
-        _render_outbreak_clustering(df, predictor)
+        feat_matrix = predictor.last_feature_matrix_
+        if feat_matrix is None or len(feat_matrix) != len(df):
+            st.warning("Feature matrix unavailable; skipping outbreak clustering.")
+            return
+        _render_outbreak_clustering(df, feat_matrix)
 
     if show_compare:
         _render_comparison()

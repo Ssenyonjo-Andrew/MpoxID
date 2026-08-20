@@ -14,7 +14,7 @@ except ImportError:
 PathLike = Union[str, Path]
 
 DEFAULT_CFG = {
-    "project": {"name": "mega_mpox", "version": "1.0.0"},
+    "project": {"name": "mega_mpox", "version": "2.0.0", "random_seed": 42},
     "paths": {
         "raw_fasta": "data/raw",
         "metadata": "data/metadata/metadata.csv",
@@ -34,10 +34,36 @@ DEFAULT_CFG = {
     "features": {"kmer_sizes": [2, 3, 4], "use_canonical_kmers": True, "include_codon_usage": True},
     "training": {
         "test_size": 0.2,
+        "chronological_holdout_fraction": 0.2,
         "n_cv_folds": 5,
-        "deploy_model": "xgboost",
+        "deploy_model": "auto",
         "models": ["logistic_regression", "random_forest", "xgboost"],
         "random_seed": 42,
+        "tie_break_priority_clades": ["Ia", "Ib"],
+        "min_priority_recall_floor": 0.2,
+        "quality_filter_for_training": False,
+        "deep_learning": {
+            "backend": "auto",
+            "max_epochs": 20,
+            "batch_size": 16,
+            "learning_rate": 0.001,
+            "patience": 4,
+            "max_sequence_length": 4096,
+            "representation": "chunked_onehot",
+            "chunk_strategy": "evenly_spaced",
+            "n_chunks": 32,
+            "chunk_length": 128,
+            "hidden_dim": 128,
+            "dropout": 0.3,
+        },
+    },
+    "inference": {
+        "inference_mode": "online",
+        "online_provider": "inprocess",
+        "online_url": "http://127.0.0.1:8765/predict",
+        "request_timeout_seconds": 30,
+        "confidence_decimals": 4,
+        "top_kmers_per_clade": 10,
     },
 }
 

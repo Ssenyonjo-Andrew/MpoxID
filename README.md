@@ -63,7 +63,6 @@ pip install -r requirements.txt
 3. Generate demo data, train models, open the app:
 
 ```bash
-python scripts/generate_demo_data.py
 python scripts/train_all.py
 streamlit run app/streamlit_app.py
 ```
