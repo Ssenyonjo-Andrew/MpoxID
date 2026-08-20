@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Union
+from typing import Callable, Iterator, List, Optional, Sequence, Union
 
 import joblib
 import numpy as np
@@ -78,6 +78,29 @@ class MpoxPredictor:
             except Exception:
                 return {}
         return {}
+
+    def iter_predict_records(
+        self,
+        records: Sequence[SequenceRecord],
+        enable_audit_log: bool = True,
+    ) -> Iterator[pd.DataFrame]:
+        """Yield one completed prediction DataFrame per sequence.
+
+        This keeps memory bounded and lets callers render results as soon as
+        each genome finishes. The existing ``predict_records`` API remains
+        available for batch-oriented callers.
+        """
+        feature_batches = []
+        for record in records:
+            result = self.predict_records(
+                [record],
+                enable_audit_log=enable_audit_log,
+            )
+            if self.last_feature_matrix_ is not None:
+                feature_batches.append(self.last_feature_matrix_)
+            yield result
+        if feature_batches:
+            self.last_feature_matrix_ = np.vstack(feature_batches)
 
     def predict_records(
         self,

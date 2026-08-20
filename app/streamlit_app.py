@@ -102,7 +102,20 @@ def predict_uploaded_records(
     records: list,
     progress_callback,
 ) -> pd.DataFrame:
-    """Use progressive inference when supported, with legacy deployment fallback."""
+    """Stream one prediction at a time, with legacy deployment fallback."""
+    if hasattr(predictor, "iter_predict_records"):
+        completed = []
+        total = len(records)
+        for index, result in enumerate(
+            predictor.iter_predict_records(records),
+            start=1,
+        ):
+            completed.append(result)
+            partial = pd.concat(completed, ignore_index=True)
+            if progress_callback is not None:
+                progress_callback(partial, index, total)
+        return pd.concat(completed, ignore_index=True) if completed else pd.DataFrame()
+
     parameters = inspect.signature(predictor.predict_records).parameters
     if "batch_size" in parameters and "progress_callback" in parameters:
         return predictor.predict_records(
