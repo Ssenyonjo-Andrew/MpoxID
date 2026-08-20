@@ -130,6 +130,25 @@ def predict_uploaded_records(
     return result
 
 
+def render_live_results(results_slot, partial: pd.DataFrame) -> None:
+    """Render a small native table during inference to keep updates immediate."""
+    preview_columns = [
+        "sequence_id",
+        "source_file",
+        "predicted_clade",
+        "confidence",
+        "quality_flag",
+        "ood_status",
+    ]
+    available = [column for column in preview_columns if column in partial.columns]
+    results_slot.dataframe(
+        partial[available],
+        hide_index=True,
+        width="stretch",
+        height=min(420, 92 + (len(partial) * 35)),
+    )
+
+
 def render_nextclade_css():
     st.markdown(
         """
@@ -485,9 +504,8 @@ def main() -> None:
 
                         def update_results(partial: pd.DataFrame, completed: int, total: int) -> None:
                             progress.progress(completed / total, text=f"Predicted {completed} of {total} sequences")
-                            with results_slot.container():
-                                st.caption(f"Results available: {completed}/{total}")
-                                render_nextclade_table(partial)
+                            st.caption(f"Results available: {completed}/{total}")
+                            render_live_results(results_slot, partial)
 
                         df = predict_uploaded_records(predictor, records, update_results)
                         progress.progress(1.0, text=f"Predicted {len(df)} sequences")
