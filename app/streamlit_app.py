@@ -10,6 +10,7 @@ Fully offline once models/deploy_bundle.joblib is present.
 from __future__ import annotations
 
 import json
+import inspect
 import sys
 import tempfile
 from pathlib import Path
@@ -93,6 +94,26 @@ def render_landing_page() -> bool:
 def load_predictor() -> MpoxPredictor:
     bundle = ROOT / "models" / "deploy_bundle.joblib"
     return MpoxPredictor(bundle)
+
+
+def predict_uploaded_records(
+    predictor: MpoxPredictor,
+    records: list,
+    progress_callback,
+) -> pd.DataFrame:
+    """Use progressive inference when supported, with legacy deployment fallback."""
+    parameters = inspect.signature(predictor.predict_records).parameters
+    if "batch_size" in parameters and "progress_callback" in parameters:
+        return predictor.predict_records(
+            records,
+            batch_size=1,
+            progress_callback=progress_callback,
+        )
+
+    result = predictor.predict_records(records)
+    if progress_callback is not None and not result.empty:
+        progress_callback(result, len(result), len(records))
+    return result
 
 
 def render_nextclade_css():
@@ -441,11 +462,7 @@ def main() -> None:
                             st.caption(f"Results available: {completed}/{total}")
                             render_nextclade_table(partial)
 
-                    df = predictor.predict_records(
-                        records,
-                        batch_size=1,
-                        progress_callback=update_results,
-                    )
+                    df = predict_uploaded_records(predictor, records, update_results)
                     progress.progress(1.0, text=f"Predicted {len(df)} sequences")
                     status.update(label=f"Finished: {len(df)} sequences predicted", state="complete")
                 except Exception as exc:
@@ -532,7 +549,7 @@ def main() -> None:
             )
 
     with tab_outbreak:
-        feat_matrix = predictor.last_feature_matrix_
+        feat_matrix = getattr(predictor, "last_feature_matrix_", None)
         if feat_matrix is None or len(feat_matrix) != len(df):
             st.warning("Feature matrix unavailable; skipping outbreak clustering.")
             return
