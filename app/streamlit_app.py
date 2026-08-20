@@ -92,7 +92,7 @@ def render_landing_page() -> bool:
 @st.cache_resource
 def load_predictor() -> MpoxPredictor:
     bundle = ROOT / "models" / "deploy_bundle.joblib"
-    return MpoxPredictor(bundle, use_ensemble=False)
+    return MpoxPredictor(bundle)
 
 
 def render_nextclade_css():
