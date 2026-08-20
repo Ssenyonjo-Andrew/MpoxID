@@ -10,6 +10,7 @@ Fully offline once models/deploy_bundle.joblib is present.
 from __future__ import annotations
 
 import json
+import hashlib
 import inspect
 import sys
 import tempfile
@@ -451,24 +452,39 @@ def main() -> None:
                     record.source_file = uf.name
                 records.extend(file_records)
 
-            with st.status("Analyzing uploaded sequences...", expanded=True) as status:
-                try:
-                    progress = st.progress(0, text="Preparing sequences...")
-                    results_slot = st.empty()
+            sequence_key = hashlib.sha256(
+                "|".join(
+                    f"{record.id}:{record.source_file}:{record.sequence}"
+                    for record in records
+                ).encode("utf-8")
+            ).hexdigest()
+            cache_key = f"{predictor.schema_hash}:{sequence_key}"
+            cached_prediction = st.session_state.get("prediction_cache", {}).get(cache_key)
 
-                    def update_results(partial: pd.DataFrame, completed: int, total: int) -> None:
-                        progress.progress(completed / total, text=f"Predicted {completed} of {total} sequences")
-                        with results_slot.container():
-                            st.caption(f"Results available: {completed}/{total}")
-                            render_nextclade_table(partial)
+            if cached_prediction is not None:
+                df = cached_prediction.copy()
+                st.success(f"Loaded {len(df)} cached predictions.")
+            else:
+                with st.status("Analyzing uploaded sequences...", expanded=True) as status:
+                    try:
+                        progress = st.progress(0, text="Preparing sequences...")
+                        results_slot = st.empty()
 
-                    df = predict_uploaded_records(predictor, records, update_results)
-                    progress.progress(1.0, text=f"Predicted {len(df)} sequences")
-                    status.update(label=f"Finished: {len(df)} sequences predicted", state="complete")
-                except Exception as exc:
-                    status.update(label="Analysis failed", state="error")
-                    st.error(f"Analysis failed: {exc}")
-                    return
+                        def update_results(partial: pd.DataFrame, completed: int, total: int) -> None:
+                            progress.progress(completed / total, text=f"Predicted {completed} of {total} sequences")
+                            with results_slot.container():
+                                st.caption(f"Results available: {completed}/{total}")
+                                render_nextclade_table(partial)
+
+                        df = predict_uploaded_records(predictor, records, update_results)
+                        progress.progress(1.0, text=f"Predicted {len(df)} sequences")
+                        status.update(label=f"Finished: {len(df)} sequences predicted", state="complete")
+                        prediction_cache = st.session_state.setdefault("prediction_cache", {})
+                        prediction_cache[cache_key] = df.copy()
+                    except Exception as exc:
+                        status.update(label="Analysis failed", state="error")
+                        st.error(f"Analysis failed: {exc}")
+                        return
     else:
         st.info("Upload FASTA files above or click **Load Real NCBI Mpox Dataset** in the sidebar to test.")
         if show_compare:
@@ -549,11 +565,17 @@ def main() -> None:
             )
 
     with tab_outbreak:
-        feat_matrix = getattr(predictor, "last_feature_matrix_", None)
-        if feat_matrix is None or len(feat_matrix) != len(df):
-            st.warning("Feature matrix unavailable; skipping outbreak clustering.")
-            return
-        _render_outbreak_clustering(df, feat_matrix)
+        st.info("Clustering is optional and is calculated only when requested.")
+        if st.button("Generate outbreak clustering", type="secondary"):
+            with st.spinner("Extracting comparison features..."):
+                feat_matrix = getattr(predictor, "last_feature_matrix_", None)
+                if feat_matrix is None or len(feat_matrix) != len(df):
+                    feat_df = predictor.extractor.transform(
+                        df["sequence_raw"].tolist(),
+                        ids=df["sequence_id"].tolist(),
+                    )
+                    feat_matrix = predictor.extractor.model_matrix(feat_df)
+            _render_outbreak_clustering(df, feat_matrix)
 
     if show_compare:
         _render_comparison()
